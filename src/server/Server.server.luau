@@ -1,6 +1,24 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local RemoteEvent = Instance.new("RemoteEvent")
+RemoteEvent.Parent = ReplicatedStorage
 
+local currentCarTable = {} -- table with the index being the player and it associates them with their current car. Useful so we destroy their old one when they pick a new one
+
+RemoteEvent.OnServerEvent:Connect(function(player, reason, data)
+    if reason == "vehicelButtonActivated" then
+        -- destroy their old car if they have one:
+        if currentCarTable[player.Name] then
+            currentCarTable[player.Name]:Destroy()
+        end
+        
+        -- Inside each button is a viewport frame, containing the car model they chose.
+        currentCarTable[player.Name] = player.PlayerGui.ChooseVehicleUI.Frame.vehicleUIs:FindFirstChild(data.buttonName).ViewportFrame.Car:Clone()
+        currentCarTable[player.Name]:PivotTo(game.Workspace.vehicleSpawners:FindFirstChild(data.currentSpawnerName).CFrame * CFrame.new(0,15,-30) * CFrame.Angles(math.rad(-90),math.rad(180),0))
+        currentCarTable[player.Name].Parent = game.Workspace
+    end
+end)
 
 local idStarter = "rbxassetid://"
 local screamIdsTable = {
